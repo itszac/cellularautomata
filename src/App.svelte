@@ -81,20 +81,16 @@
             row.forEach((element, elementIndex) => {
                 if (element.state === 1 && element.oldState !== 1) {
                     ctx.fillStyle = selectedScheme[0];
-                    ctx.fillRect(rowIndex, elementIndex, pixelSize, pixelSize);
+                    ctx.fillRect(elementIndex, rowIndex, pixelSize, pixelSize);
                 } else if (element.state === 0 && element.oldState !== 0) {
                     ctx.fillStyle = selectedScheme[1];
-                    ctx.fillRect(rowIndex, elementIndex, pixelSize, pixelSize);
-                } else if (element.state !== element.oldState) {
-                    console.log('bbb', element)
+                    ctx.fillRect(elementIndex, rowIndex, pixelSize, pixelSize);
                 }
             })
         });
         setPixelSize = (newSize) => {
 
             paused = true;
-            console.log('setting pixel size')
-            console.log(newSize)
             pixelSize = newSize;
             const x_pixels = Math.round(canvasWidth / pixelSize);
             const y_pixels = Math.round(canvasHeight / pixelSize);
@@ -152,9 +148,6 @@
             for (var i = 0; i < object.size[0]; i++) {
                 for (var j = 0; j < object.size[1]; j++) {
                     if (object.pattern[i][j] === "O") {
-                        //console.log(coord[0]=i)
-                        //console.log(grid[coord[0] + i])
-                        //console.log(i, j, coord)
                         grid[coord[0] + i][coord[1]+j].oldState = grid[coord[0] + i][coord[1]+j].state;
                         grid[coord[0] + i][coord[1]+j].state = 1;
                     } else {
@@ -190,8 +183,7 @@
             const rect = ctx.canvas.getBoundingClientRect()
             const newX = e.clientX - rect.left;
             const newY = e.clientY - rect.top;
-            console.log('clicked on', newX, newY)
-            spawnObject([Math.round(newX), Math.round(newY)], selectedPattern)
+            spawnObject([Math.round(newY), Math.round(newX)], selectedPattern)
         }
         setColorScheme = (scheme) => {
             selectedScheme = scheme
@@ -217,7 +209,6 @@
 
         render()
         resetGame = (blank) => {
-            console.log(selectedRule)
             count = 0;
             paused = true;
             initGrid();
@@ -231,12 +222,10 @@
         }
         startGame = () => {
             resetGame()
-            lifeLoop();
         }
         setTimeout(startGame, 1000)
         fetch("gol_items.json").then(response => response.json())
            .then(data => {
-            console.log(data)
             patterns = Object.values(data)
             selectedPattern = patterns[0]
         });
@@ -257,18 +246,18 @@
     <div class="controls">
     <h1>life</h1>
     <p>
-        <button on:click={() => resetGame(true)}>
-            Reset to Blank
+        <button class="btn" on:click={() => resetGame(true)}>
+            Reset Blank
         </button>
-        <button on:click={resetGame}>
-            Reset to Random
+        <button class="btn" on:click={() => resetGame(false)}>
+            Reset Random
         </button>
     </p>
     <div class="bottom-controls">
         <div class="dropdowns">
         <div class="dropdown">
             <button class="dropdown-button" on:click="{(event) => dropdownOneOpen = !dropdownOneOpen}">
-                Color Scheme
+                Colors
             </button>
             <div class="dropdown-list {dropdownOneOpen ? "open" : "hidden"}">
                 {#each colorSchemes as scheme}
@@ -277,14 +266,14 @@
                     dropdownOneOpen = false
                 }}">
                     <div class="dropdown-option-color" style="background-color: {scheme[0]}"></div>
-                    <div class="dropdown-option-color blue" style="background-color: {scheme[1]}"></div>
+                    <div class="dropdown-option-color" style="background-color: {scheme[1]}"></div>
                  </div>
                 {/each}
             </div>
         </div>
         <div class="dropdown">
             <button class="dropdown-button" on:click="{(event) => dropdownTwoOpen = !dropdownTwoOpen}">
-                Click to Spawn
+                Spawn Pattern
             </button>
             <div class="dropdown-list {dropdownTwoOpen ? "open" : "hidden"}">
                 {#each patterns as pattern}
@@ -304,14 +293,7 @@
             </div>
         </div>
         </div>
-        <select value={selectedRule} on:change="{(event) => selectedRule = event.target.value}">
-            {#each rules as rule}
-                <option value={rule.value}>
-                    {rule.text}
-                </option>
-            {/each}
-        </select>
-        <input type="range" min=1 max=32 on:change="{(e) => setPixelSize(e.target.value)}" />
+        <!--input type="range" min=1 max=32 on:change="{(e) => setPixelSize(e.target.value)}" /-->
     </div>
 </div>
     
@@ -319,13 +301,6 @@
 <svelte:window bind:innerWidth={innerWidth} bind:innerHeight={innerHeight}/>
 
 <style>
-    .dropdowns {
-        display: flex;
-    }
-    .bottom-controls {
-        flex-direction: column;
-        display: flex;
-    }
     .controls {
         flex-direction: column;
         display: flex;
@@ -336,9 +311,10 @@
     .dropdown {
         position: relative;
         display: inline-block;
-        width: 200px;
+        width: 150px;
     }
     .dropdown-button {
+        margin: 0;
         position: relative;
         padding: 0;
         width: 100%;
@@ -353,6 +329,7 @@
     }
     .dropdown-list-item {
         display: flex;
+        background-color: "#fefeff";
     }
     .pattern-item {
         flex-direction: column;
@@ -362,12 +339,6 @@
         width: 50%;
         height: 16px;
     }
-    .red {
-        background-color: red;
-    }
-    .blue {
-        background-color: blue;
-    }
     .dropdown-list-item:hover {
         background-color: lightblue;
         opacity: 50%;
@@ -375,12 +346,13 @@
     .dropdown-list.hidden {
         display:none;
     }
+    .btn {
+        width: 150px;
+    }
 	main {
 		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-        font-family: "Lucida Console", Courier, monospace;;
+        font-family: Courier, monospace;
+        background-color: "#fefeff";
 	}
 
 	h1 {
@@ -388,6 +360,8 @@
 		font-size: 4em;
 		font-weight: 120;
         z-index: 1;
+        margin: 0;
+        padding: 0;
 	}
 
 	@media (min-width: 640px) {
